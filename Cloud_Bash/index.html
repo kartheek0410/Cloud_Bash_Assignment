@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Frequency Finder</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        input, button { margin-bottom: 10px; padding: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; text-align: left; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+<h1>Word Frequency Finder</h1>
+<p>Enter a URL to fetch and calculate the most frequent words on that page.</p>
+
+<label for="urlInput">URL:</label>
+<input type="text" id="urlInput" placeholder="Enter URL">
+<button id="fetchButton">Fetch and Calculate</button>
+
+<table id="resultTable" style="display:none;">
+    <thead>
+        <tr>
+            <th>Word</th>
+            <th>Frequency</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+    document.getElementById('fetchButton').addEventListener('click', function() {
+        const url = document.getElementById('urlInput').value;
+        if (!url) {
+            alert('Please enter a URL');
+            return;
+        }
+
+        // Clear the result table if there's any previous data
+        const tableBody = document.querySelector('#resultTable tbody');
+        tableBody.innerHTML = '';
+
+        // Show the table
+        document.getElementById('resultTable').style.display = 'block';
+
+        // Send the URL to the backend
+        fetch('http://localhost:5000/get-word-frequencies', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url: url })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Error: ' + data.error);
+            } else {
+                // Populate the table with word frequencies
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    const wordCell = document.createElement('td');
+                    wordCell.textContent = item[0];
+                    const frequencyCell = document.createElement('td');
+                    frequencyCell.textContent = item[1];
+                    row.appendChild(wordCell);
+                    row.appendChild(frequencyCell);
+                    tableBody.appendChild(row);
+                });
+            }
+        })
+        .catch(error => {
+            alert('Failed to fetch data: ' + error.message);
+        });
+    });
+</script>
+
+</body>
+</html>
